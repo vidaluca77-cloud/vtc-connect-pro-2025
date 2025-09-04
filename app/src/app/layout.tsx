@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ClerkProvider } from '@clerk/nextjs';
+import { ClerkProvider, SignedIn, SignedOut, UserButton, SignInButton } from '@clerk/nextjs';
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -29,7 +29,7 @@ export default function RootLayout({
               <div className="bg-gray-100 p-4 rounded text-left text-sm">
                 <p className="font-semibold mb-2">Étapes :</p>
                 <ol className="list-decimal list-inside space-y-1">
-                  <li>Créer un compte sur <a href="https://clerk.com" className="text-blue-600">clerk.com</a></li>
+                  <li>Créer un compte sur <a className="text-blue-600" href="https://clerk.com">clerk.com</a></li>
                   <li>Copier <code className="bg-gray-200 px-1 rounded">.env.example</code> vers <code className="bg-gray-200 px-1 rounded">.env.local</code></li>
                   <li>Ajouter vos clés Clerk dans <code className="bg-gray-200 px-1 rounded">.env.local</code></li>
                   <li>Redémarrer l'application</li>
@@ -41,12 +41,31 @@ export default function RootLayout({
       </html>
     );
   }
-
+  
   return (
     <ClerkProvider publishableKey={publishableKey}>
       <html lang="fr">
         <body className="font-sans antialiased">
-          {children}
+          <header className="bg-white shadow-sm border-b border-gray-200">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex justify-between items-center h-16">
+                <div className="flex items-center">
+                  <h1 className="text-xl font-bold text-gray-900">VTC Connect Pro</h1>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <SignedIn>
+                    <UserButton />
+                  </SignedIn>
+                  <SignedOut>
+                    <SignInButton />
+                  </SignedOut>
+                </div>
+              </div>
+            </div>
+          </header>
+          <main>
+            {children}
+          </main>
         </body>
       </html>
     </ClerkProvider>
