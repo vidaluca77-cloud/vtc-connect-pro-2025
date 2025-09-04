@@ -29,7 +29,7 @@ export default function RootLayout({
               <div className="bg-gray-100 p-4 rounded text-left text-sm">
                 <p className="font-semibold mb-2">Étapes :</p>
                 <ol className="list-decimal list-inside space-y-1">
-                  <li>Créer un compte sur <a className="text-blue-600" href="https://clerk.com">clerk.com</a></li>
+                  <li>Créer un compte sur <a href="https://clerk.com" className="text-blue-600">clerk.com</a></li>
                   <li>Copier <code className="bg-gray-200 px-1 rounded">.env.example</code> vers <code className="bg-gray-200 px-1 rounded">.env.local</code></li>
                   <li>Ajouter vos clés Clerk dans <code className="bg-gray-200 px-1 rounded">.env.local</code></li>
                   <li>Redémarrer l'application</li>
