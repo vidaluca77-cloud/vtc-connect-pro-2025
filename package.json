@@ -1,0 +1,45 @@
+{
+  "name": "vtc-connect-pro-2025",
+  "version": "1.0.0",
+  "description": "VTC Connect Pro 2025 - Plateforme de gestion complète pour chauffeurs VTC",
+  "private": true,
+  "workspaces": [
+    "app",
+    "api"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=app",
+    "dev:app": "npm run dev --workspace=app",
+    "dev:api": "npm run dev --workspace=api",
+    "dev:all": "concurrently \"npm run dev:app\" \"npm run dev:api\"",
+    "build": "npm run build --workspace=app",
+    "build:app": "npm run build --workspace=app",
+    "build:api": "echo 'No build step for API'",
+    "start": "npm run start --workspace=app",
+    "start:app": "npm run start --workspace=app", 
+    "start:api": "npm run start --workspace=api",
+    "lint": "npm run lint --workspace=app",
+    "lint:app": "npm run lint --workspace=app",
+    "test": "npm run test --workspace=api",
+    "test:api": "npm run test --workspace=api",
+    "vercel-build": "npm install && npm run build --workspace=app",
+    "vercel-install": "npm install && npm install --workspace=app",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:build": "docker compose up --build",
+    "install:all": "npm install && npm install --workspace=app && npm install --workspace=api"
+  },
+  "devDependencies": {
+    "concurrently": "^7.6.0"
+  },
+  "keywords": [
+    "vtc",
+    "transport",
+    "nextjs",
+    "nodejs",
+    "clerk",
+    "mongodb"
+  ],
+  "author": "VTC Connect Pro Team",
+  "license": "MIT"
+}

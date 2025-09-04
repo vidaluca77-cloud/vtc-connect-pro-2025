@@ -137,3 +137,13 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Vercel deployment files
+.vercel
+
+# Avoid duplicate lockfiles in workspaces (keep only root lockfile)
+app/package-lock.json
+api/package-lock.json
+
+# Temporary files
+/tmp
