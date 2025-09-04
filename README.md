@@ -262,11 +262,29 @@ vtc-connect-pro-2025/
 
 ## 🚢 Déploiement
 
-### Vercel (Frontend + Full-Stack)
-1. Connecter le repository à Vercel
-2. Configurer les variables d'environnement Clerk
-3. Le build se fait automatiquement avec `npm run build`
-4. Next.js gère le SSR et les API routes
+### 🚀 Vercel (Recommandé)
+
+**⚡ Déploiement rapide et optimisé pour Next.js**
+
+Le projet est optimisé pour Vercel avec une configuration mono-repo complète.
+
+```bash
+# Connecter à Vercel et déployer
+vercel
+
+# Ou via GitHub integration (recommandé)
+# 1. Connecter le repository à Vercel
+# 2. Utiliser la configuration automatique
+```
+
+**📖 Guide complet:** Voir [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md) pour des instructions détaillées.
+
+**🔧 Configuration automatique:**
+- ✅ Build command: `npm run vercel-build`
+- ✅ Output directory: `app/.next`
+- ✅ Install command: `npm run vercel-install`
+- ✅ Mono-repo structure supportée
+- ✅ Variables d'environnement Clerk configurées
 
 ### Railway/Render (API séparée)
 1. Déployer le dossier `api/` séparément
