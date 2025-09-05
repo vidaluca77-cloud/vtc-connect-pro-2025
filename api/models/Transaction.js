@@ -9,7 +9,7 @@ const transactionSchema = new mongoose.Schema({
   rideId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Ride',
-    required: true
+    required: false
   },
   amount: {
     type: Number,
@@ -18,7 +18,7 @@ const transactionSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['earning', 'expense', 'commission', 'fuel', 'maintenance', 'insurance'],
+    enum: ['earning', 'expense', 'commission', 'fuel', 'maintenance', 'insurance', 'bonus', 'penalty'],
     required: true
   },
   status: {
@@ -28,7 +28,7 @@ const transactionSchema = new mongoose.Schema({
   },
   paymentMethod: {
     type: String,
-    enum: ['cash', 'card', 'bank_transfer', 'app_payment'],
+    enum: ['cash', 'card', 'bank_transfer', 'app_payment', 'check', 'other'],
     required: true
   },
   description: {
@@ -37,7 +37,7 @@ const transactionSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    enum: ['ride', 'fuel', 'maintenance', 'insurance', 'commission', 'bonus', 'other'],
+    enum: ['ride', 'fuel', 'maintenance', 'insurance', 'commission', 'bonus', 'parking', 'tolls', 'other'],
     required: true
   },
   receiptUrl: {
@@ -46,6 +46,17 @@ const transactionSchema = new mongoose.Schema({
   taxDeductible: {
     type: Boolean,
     default: false
+  },
+  // Additional fields for finance tracking
+  date: {
+    type: Date,
+    default: Date.now
+  },
+  location: {
+    type: String
+  },
+  notes: {
+    type: String
   }
 }, {
   timestamps: true
@@ -53,6 +64,7 @@ const transactionSchema = new mongoose.Schema({
 
 // Indexes for performance
 transactionSchema.index({ userId: 1, createdAt: -1 });
+transactionSchema.index({ userId: 1, date: -1 });
 transactionSchema.index({ status: 1 });
 transactionSchema.index({ type: 1 });
 transactionSchema.index({ category: 1 });

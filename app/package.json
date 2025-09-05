@@ -10,9 +10,16 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^6.31.8",
+    "@stripe/stripe-js": "^4.0.0",
+    "@tanstack/react-query": "^5.0.0",
+    "chart.js": "^4.4.0",
+    "chartjs-adapter-date-fns": "^3.0.0",
+    "date-fns": "^3.6.0",
     "next": "15.5.2",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-chartjs-2": "^5.2.0",
+    "react-dom": "19.1.0",
+    "zod": "^3.22.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

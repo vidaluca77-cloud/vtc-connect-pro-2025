@@ -26,7 +26,9 @@
     "openai": "^4.1.0",
     "redis": "^4.6.7",
     "node-cron": "^3.0.2",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.3.1",
+    "winston": "^3.11.0",
+    "zod": "^3.22.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1",
