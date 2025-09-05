@@ -66,9 +66,8 @@ This project uses a mono-repo structure with workspaces:
 - `api/` - Node.js backend API (separate deployment)
 
 ### Vercel Configuration
-The project includes two `vercel.json` files:
-- **Root level**: `/vercel.json` - Main configuration for mono-repo deployment
-- **App level**: `/app/vercel.json` - Specific app configuration
+The project includes a single optimized `vercel.json` file:
+- **Root level**: `/vercel.json` - Optimized configuration for mono-repo deployment
 
 ### Build Process
 - **Install Command:** `npm run vercel-install` - Installs root and app dependencies

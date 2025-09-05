@@ -1,28 +1,30 @@
 {
   "version": 2,
+  "framework": "nextjs",
   "name": "vtc-connect-pro-2025",
   "scope": "vidaluca77-cloud",
-  "builds": [
-    {
-      "src": "app/package.json",
-      "use": "@vercel/next",
-      "config": {
-        "distDir": ".next"
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "app/$1"
-    }
-  ],
+  "buildCommand": "npm run vercel-build",
+  "outputDirectory": "app/.next",
+  "installCommand": "npm run vercel-install",
+  "devCommand": "npm run dev",
+  "rootDirectory": "./",
   "env": {
-    "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": "@clerk_publishable_key",
-    "CLERK_SECRET_KEY": "@clerk_secret_key",
+    "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": "$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+    "CLERK_SECRET_KEY": "$CLERK_SECRET_KEY",
     "NEXT_PUBLIC_CLERK_SIGN_IN_URL": "/sign-in",
     "NEXT_PUBLIC_CLERK_SIGN_UP_URL": "/sign-up",
     "NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL": "/dashboard",
     "NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL": "/dashboard"
-  }
+  },
+  "functions": {
+    "app/src/app/api/**/*.ts": {
+      "runtime": "nodejs20.x"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
+    }
+  ]
 }
