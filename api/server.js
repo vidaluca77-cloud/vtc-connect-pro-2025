@@ -34,13 +34,28 @@ app.use('/api/admin', require('./routes/admin'));
 app.use('/api/ai', require('./routes/ai'));
 app.use('/api/email', require('./routes/email'));
 
-// Health check
-app.get('/health', (req, res) => {
-  res.status(200).json({
-    status: 'OK',
-    timestamp: new Date().toISOString(),
-    version: process.env.npm_package_version || '1.0.0'
-  });
+// Health check with MongoDB status
+app.get('/health', async (req, res) => {
+  try {
+    // Check MongoDB connection
+    const mongoStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+    
+    res.status(200).json({
+      status: 'OK',
+      timestamp: new Date().toISOString(),
+      version: process.env.npm_package_version || '1.0.0',
+      database: {
+        status: mongoStatus,
+        connection: mongoose.connection.readyState === 1 ? 'MongoDB Cloud' : 'Not connected'
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      timestamp: new Date().toISOString(),
+      error: error.message
+    });
+  }
 });
 
 // Error handling middleware
@@ -52,14 +67,29 @@ app.use((err, req, res, next) => {
   });
 });
 
-// MongoDB connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/vtcconnectpro', {
+// MongoDB connection with Cloud compatibility
+const mongoOptions = {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-});
+  serverApi: {
+    version: '1',
+    strict: true,
+    deprecationErrors: true,
+  }
+};
 
-mongoose.connection.on('connected', () => {
-  console.log('Connected to MongoDB');
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/vtcconnectpro', mongoOptions);
+
+mongoose.connection.on('connected', async () => {
+  console.log('Connected to MongoDB Cloud');
+  
+  // Test the connection with a ping (similar to the problem statement example)
+  try {
+    await mongoose.connection.db.admin().ping();
+    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+  } catch (error) {
+    console.error('MongoDB ping failed:', error);
+  }
 });
 
 mongoose.connection.on('error', (err) => {
