@@ -1,6 +1,9 @@
 # VTC Connect Pro 2025
+
 Plateforme VTC Connect Pro - Solution complète de gestion et réservation VTC avec backend Node.js, frontend Next.js, authentification Clerk, système de paiement intégré, géolocalisation en temps réel, notifications push et interface administrateur avancée.
+
 ## 🏗️ Architecture Mono-Repo
+
 ```
 vtc-connect-pro-2025/
 ├── app/                 # Next.js + Clerk (PRINCIPAL)
@@ -17,7 +20,9 @@ vtc-connect-pro-2025/
 ├── docker-compose.yml   # Orchestration
 └── package.json         # Scripts workspace
 ```
+
 ## 🚀 Fonctionnalités
+
 - **Gestion des courses** : Planification, suivi en temps réel, historique
 - **Système financier** : Gestion des revenus, dépenses, analyses détaillées
 - **Intelligence artificielle** : Optimisation d'itinéraires, prédiction de demande
@@ -25,15 +30,21 @@ vtc-connect-pro-2025/
 - **Interface moderne** : Design responsive avec Tailwind CSS
 - **Authentification sécurisée** : Système Clerk avec protection des routes
 - **Notifications** : Système d'email et notifications push
+
 ## 🛠 Technologies
+
 ### Frontend (app/)
+
 - **Next.js 15** avec App Router
 - **Clerk** pour l'authentification
 - **Tailwind CSS** pour le styling
 - **TypeScript** pour la sécurité de type
 - **React 19** pour l'interface utilisateur
+
 ### Backend (api/)
+
 - **Node.js + Express.js**
 - **MongoDB** avec Mongoose
 - **Redis** pour la mise en cache
-<!-- Technical commit to trigger Vercel deployment - vercel.json config fixed - 2025-09-05 19:05 CEST -->
+
+<!-- Technical commit to trigger Vercel deployment - vercel.json config fixed - 2025-09-05 21:05 CEST -->
