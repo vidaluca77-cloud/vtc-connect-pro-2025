@@ -5,12 +5,6 @@
   "buildCommand": "npm run vercel-build",
   "installCommand": "npm run vercel-install",
   "outputDirectory": "app/.next",
-  "functions": {
-    "app/src/app/api/**/*.ts": {
-      "runtime": "nodejs20.x",
-      "maxDuration": 30
-    }
-  },
   "regions": ["fra1"],
   "cleanUrls": true,
   "trailingSlash": false,
