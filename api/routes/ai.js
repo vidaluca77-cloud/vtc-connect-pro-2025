@@ -4,9 +4,13 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Initialize OpenAI client only if API key is available
+let openai;
+if (process.env.OPENAI_API_KEY) {
+  openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+}
 
 // AI route optimization
 router.post('/optimize-route', auth, async (req, res) => {
@@ -165,28 +169,33 @@ router.post('/chat', auth, async (req, res) => {
       support: "Je comprends votre problème. Laissez-moi vérifier les solutions disponibles pour vous."
     };
 
-    const response = mockResponses[context] || mockResponses.general;
-
-    // Uncomment when OpenAI API key is available:
-    /*
-    const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content: "Tu es un assistant IA spécialisé dans les services VTC. Tu aides les chauffeurs à optimiser leurs courses, leurs tarifs et à résoudre leurs problèmes."
-        },
-        {
-          role: "user",
-          content: message
-        }
-      ],
-      max_tokens: 300,
-      temperature: 0.7
-    });
-
-    const response = completion.choices[0].message.content;
-    */
+    // Use OpenAI API if available, otherwise use mock responses
+    let response;
+    if (openai) {
+      try {
+        const completion = await openai.chat.completions.create({
+          model: "gpt-3.5-turbo",
+          messages: [
+            {
+              role: "system",
+              content: "Tu es un assistant IA spécialisé dans les services VTC. Tu aides les chauffeurs à optimiser leurs courses, leurs tarifs et à résoudre leurs problèmes."
+            },
+            {
+              role: "user",
+              content: message
+            }
+          ],
+          max_tokens: 300,
+          temperature: 0.7
+        });
+        response = completion.choices[0].message.content;
+      } catch (error) {
+        console.error('OpenAI API error:', error);
+        response = mockResponses[context] || mockResponses.general;
+      }
+    } else {
+      response = mockResponses[context] || mockResponses.general;
+    }
 
     res.json({
       success: true,
