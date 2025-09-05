@@ -3,8 +3,155 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
+const { z } = require('zod');
 
 const router = express.Router();
+
+// Clerk webhook handler
+router.post('/webhook/clerk', express.raw({type: 'application/json'}), async (req, res) => {
+  try {
+    const payload = req.body;
+    const evt = JSON.parse(payload.toString());
+
+    console.log('Clerk webhook received:', evt.type);
+
+    switch (evt.type) {
+      case 'user.created':
+        await handleUserCreated(evt.data);
+        break;
+      case 'user.updated':
+        await handleUserUpdated(evt.data);
+        break;
+      case 'user.deleted':
+        await handleUserDeleted(evt.data);
+        break;
+      case 'session.created':
+        await handleSessionCreated(evt.data);
+        break;
+      default:
+        console.log(`Unhandled Clerk event type: ${evt.type}`);
+    }
+
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error('Clerk webhook error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+async function handleUserCreated(userData) {
+  try {
+    const existingUser = await User.findOne({ clerkId: userData.id });
+    if (existingUser) {
+      console.log('User already exists, skipping creation');
+      return;
+    }
+
+    const email = userData.email_addresses?.[0]?.email_address;
+    if (!email) {
+      console.error('No email found in Clerk user data');
+      return;
+    }
+
+    const user = new User({
+      clerkId: userData.id,
+      email: email,
+      firstName: userData.first_name || 'User',
+      lastName: userData.last_name || '',
+      imageUrl: userData.image_url,
+      isActive: true,
+      lastActivity: new Date(),
+      vtcLicense: {
+        number: '',
+        expiryDate: null,
+        isValid: false
+      },
+      subscription: {
+        plan: 'free',
+        status: 'inactive'
+      },
+      stats: {
+        totalRides: 0,
+        totalRevenue: 0,
+        totalHours: 0,
+        averageRating: 5.0,
+        thisWeek: { rides: 0, earnings: 0, hours: 0 },
+        thisMonth: { rides: 0, earnings: 0, hours: 0 },
+        allTime: { rides: 0, earnings: 0, hours: 0 }
+      },
+      driverProfile: {
+        experience: 'Nouveau chauffeur',
+        rating: 5.0,
+        totalTrips: 0,
+        totalEarnings: 0,
+        status: 'offline',
+        workingHours: {
+          weekdays: { start: '08:00', end: '20:00' },
+          weekends: { start: '09:00', end: '22:00' }
+        },
+        preferredAreas: ['Paris'],
+        bio: ''
+      }
+    });
+
+    await user.save();
+    console.log('User created successfully:', user.email);
+  } catch (error) {
+    console.error('Error creating user from Clerk webhook:', error);
+  }
+}
+
+async function handleUserUpdated(userData) {
+  try {
+    const user = await User.findOne({ clerkId: userData.id });
+    if (!user) {
+      console.log('User not found, creating new user');
+      await handleUserCreated(userData);
+      return;
+    }
+
+    const email = userData.email_addresses?.[0]?.email_address;
+    if (email) {
+      user.email = email;
+    }
+    
+    user.firstName = userData.first_name || user.firstName;
+    user.lastName = userData.last_name || user.lastName;
+    user.imageUrl = userData.image_url || user.imageUrl;
+    user.lastActivity = new Date();
+
+    await user.save();
+    console.log('User updated successfully:', user.email);
+  } catch (error) {
+    console.error('Error updating user from Clerk webhook:', error);
+  }
+}
+
+async function handleUserDeleted(userData) {
+  try {
+    const user = await User.findOne({ clerkId: userData.id });
+    if (user) {
+      user.isActive = false;
+      user.deletedAt = new Date();
+      await user.save();
+      console.log('User marked as deleted:', user.email);
+    }
+  } catch (error) {
+    console.error('Error deleting user from Clerk webhook:', error);
+  }
+}
+
+async function handleSessionCreated(sessionData) {
+  try {
+    const user = await User.findOne({ clerkId: sessionData.user_id });
+    if (user) {
+      user.lastActivity = new Date();
+      await user.save();
+    }
+  } catch (error) {
+    console.error('Error updating session from Clerk webhook:', error);
+  }
+}
 
 // Register
 router.post('/register', async (req, res) => {
@@ -31,7 +178,7 @@ router.post('/register', async (req, res) => {
       firstName,
       lastName,
       phone,
-      vtcLicense,
+      vtcLicense: { number: vtcLicense, isValid: false },
       isActive: true
     });
 
@@ -154,13 +301,36 @@ router.post('/clerk-sync', async (req, res) => {
           imageUrl,
           isActive: true,
           lastActivity: new Date(),
-          vtcLicense: 'PENDING', // Will be updated later
+          vtcLicense: {
+            number: '',
+            expiryDate: null,
+            isValid: false
+          },
+          subscription: {
+            plan: 'free',
+            status: 'inactive'
+          },
+          stats: {
+            totalRides: 0,
+            totalRevenue: 0,
+            totalHours: 0,
+            averageRating: 5.0,
+            thisWeek: { rides: 0, earnings: 0, hours: 0 },
+            thisMonth: { rides: 0, earnings: 0, hours: 0 },
+            allTime: { rides: 0, earnings: 0, hours: 0 }
+          },
           driverProfile: {
             experience: 'Nouveau chauffeur',
             rating: 5.0,
             totalTrips: 0,
             totalEarnings: 0,
-            status: 'offline'
+            status: 'offline',
+            workingHours: {
+              weekdays: { start: '08:00', end: '20:00' },
+              weekends: { start: '09:00', end: '22:00' }
+            },
+            preferredAreas: ['Paris'],
+            bio: ''
           }
         });
         await user.save();
@@ -182,7 +352,11 @@ router.post('/clerk-sync', async (req, res) => {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        imageUrl: user.imageUrl
+        imageUrl: user.imageUrl,
+        vtcLicense: user.vtcLicense,
+        subscription: user.subscription,
+        stats: user.stats,
+        driverProfile: user.driverProfile
       }
     });
   } catch (error) {
@@ -207,6 +381,80 @@ router.get('/me', auth, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Erreur serveur'
+    });
+  }
+});
+
+// Update user profile
+router.put('/profile', auth, async (req, res) => {
+  try {
+    const updateSchema = z.object({
+      firstName: z.string().optional(),
+      lastName: z.string().optional(),
+      phone: z.string().optional(),
+      vehicle: z.object({
+        brand: z.string(),
+        model: z.string(),
+        licensePlate: z.string(),
+        year: z.number().optional(),
+        type: z.enum(['sedan', 'suv', 'van', 'luxury']).optional(),
+        color: z.string().optional(),
+        seats: z.number().optional()
+      }).optional(),
+      vtcLicense: z.object({
+        number: z.string(),
+        expiryDate: z.string().datetime().optional()
+      }).optional(),
+      driverProfile: z.object({
+        experience: z.string().optional(),
+        bio: z.string().optional(),
+        workingHours: z.object({
+          weekdays: z.object({
+            start: z.string(),
+            end: z.string()
+          }),
+          weekends: z.object({
+            start: z.string(),
+            end: z.string()
+          })
+        }).optional(),
+        preferredAreas: z.array(z.string()).optional(),
+        languages: z.array(z.string()).optional()
+      }).optional(),
+      businessInfo: z.object({
+        siretNumber: z.string().optional(),
+        vatNumber: z.string().optional(),
+        businessAddress: z.string().optional(),
+        accountantEmail: z.string().email().optional()
+      }).optional()
+    });
+
+    const validatedData = updateSchema.parse(req.body);
+    
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { $set: validatedData },
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    res.json({
+      success: true,
+      user,
+      message: 'Profil mis à jour avec succès'
+    });
+  } catch (error) {
+    if (error.name === 'ZodError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Données invalides',
+        errors: error.errors
+      });
+    }
+
+    console.error('Update profile error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de la mise à jour du profil'
     });
   }
 });
