@@ -117,6 +117,83 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// Sync Clerk user with database
+router.post('/clerk-sync', async (req, res) => {
+  try {
+    const { clerkId, email, firstName, lastName, imageUrl } = req.body;
+
+    if (!clerkId || !email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Clerk ID and email are required'
+      });
+    }
+
+    // Check if user already exists with this clerkId
+    let user = await User.findOne({ clerkId });
+    
+    if (!user) {
+      // Check if user exists with this email (legacy user)
+      user = await User.findOne({ email });
+      
+      if (user) {
+        // Update existing user with Clerk ID
+        user.clerkId = clerkId;
+        user.firstName = firstName || user.firstName;
+        user.lastName = lastName || user.lastName;
+        user.imageUrl = imageUrl || user.imageUrl;
+        user.lastActivity = new Date();
+        await user.save();
+      } else {
+        // Create new user
+        user = new User({
+          clerkId,
+          email,
+          firstName: firstName || 'User',
+          lastName: lastName || '',
+          imageUrl,
+          isActive: true,
+          lastActivity: new Date(),
+          vtcLicense: 'PENDING', // Will be updated later
+          driverProfile: {
+            experience: 'Nouveau chauffeur',
+            rating: 5.0,
+            totalTrips: 0,
+            totalEarnings: 0,
+            status: 'offline'
+          }
+        });
+        await user.save();
+      }
+    } else {
+      // Update existing Clerk user
+      user.firstName = firstName || user.firstName;
+      user.lastName = lastName || user.lastName;
+      user.imageUrl = imageUrl || user.imageUrl;
+      user.lastActivity = new Date();
+      await user.save();
+    }
+
+    res.json({
+      success: true,
+      user: {
+        id: user._id,
+        clerkId: user.clerkId,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        imageUrl: user.imageUrl
+      }
+    });
+  } catch (error) {
+    console.error('Clerk sync error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de la synchronisation'
+    });
+  }
+});
+
 // Get current user
 router.get('/me', auth, async (req, res) => {
   try {
