@@ -17,14 +17,14 @@
     "build:app": "npm run build --workspace=app",
     "build:api": "echo 'No build step for API'",
     "start": "npm run start --workspace=app",
-    "start:app": "npm run start --workspace=app", 
+    "start:app": "npm run start --workspace=app",
     "start:api": "npm run start --workspace=api",
     "lint": "npm run lint --workspace=app",
     "lint:app": "npm run lint --workspace=app",
     "test": "npm run test --workspace=api",
     "test:api": "npm run test --workspace=api",
-    "vercel-build": "npm ci --include=dev && npm run build --workspace=app",
-    "vercel-install": "npm ci && npm ci --workspace=app --include=dev",
+    "vercel-build": "cd app && npm ci --include=dev && npm run build",
+    "vercel-install": "npm ci && cd app && npm ci --include=dev",
     "postinstall": "npm run postinstall --workspace=app --if-present",
     "verify-deployment": "./scripts/verify-deployment.sh",
     "docker:up": "docker compose up -d",
@@ -32,7 +32,16 @@
     "docker:build": "docker compose up --build",
     "install:all": "npm install && npm install --workspace=app && npm install --workspace=api"
   },
+  "dependencies": {
+    "next": "^14.0.0"
+  },
   "devDependencies": {
-    "concurrently": "^7.6.0"
+    "concurrently": "^7.6.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
   }
 }
