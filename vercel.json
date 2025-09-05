@@ -7,7 +7,6 @@
   "outputDirectory": "app/.next",
   "installCommand": "npm run vercel-install",
   "devCommand": "npm run dev",
-  "rootDirectory": "./",
   "env": {
     "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": "@next_public_clerk_publishable_key",
     "CLERK_SECRET_KEY": "@clerk_secret_key",
