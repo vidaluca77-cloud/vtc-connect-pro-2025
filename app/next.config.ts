@@ -15,6 +15,8 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Use standalone output for better compatibility
+  output: 'standalone',
 };
 
 export default nextConfig;
