@@ -47,3 +47,4 @@ vtc-connect-pro-2025/
 - Prêt pour déploiement automatique sur Vercel
 
 <!-- Verification complete - vercel-build and vercel-install scripts confirmed - 2025-09-05 21:21 CEST -->
+<!-- Force deployment trigger - 2025-09-05 21:27 CEST -->
