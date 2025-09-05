@@ -144,9 +144,10 @@ NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
 - Use `npm ci` instead of `npm install` for consistent builds
 
 **Environment variables not working**
-- Solution: Use Vercel's @ syntax for secrets: `@variable_name` instead of `$VARIABLE_NAME`
-- Verify environment variables are set correctly in Vercel dashboard
+- Solution: Set environment variables directly in Vercel dashboard (Settings → Environment Variables)
+- The `vercel.json` file no longer includes env configuration to avoid conflicts with dashboard settings
 - Check that variable names match exactly (case-sensitive)
+- For Clerk variables, ensure they're set for all environments (Production, Preview, Development)
 
 **Clerk authentication not working**
 - Solution: Verify environment variables are set correctly in Vercel
