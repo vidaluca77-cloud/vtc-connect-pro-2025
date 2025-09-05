@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { ClerkProvider, SignedIn, SignedOut, UserButton, SignInButton } from '@clerk/nextjs';
 import "./globals.css";
 
+// Force dynamic rendering to avoid Clerk validation issues during static build
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: "VTC Connect Pro 2025",
   description: "Plateforme VTC Connect Pro - Solution complète de gestion et réservation VTC",
