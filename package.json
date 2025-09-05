@@ -1,4 +1,5 @@
 {
+  // Force clean Vercel deployment - 2025-09-05
   "name": "vtc-connect-pro-2025",
   "version": "1.0.0",
   "description": "VTC Connect Pro 2025 - Plateforme de gestion complète pour chauffeurs VTC",
@@ -33,15 +34,5 @@
   },
   "devDependencies": {
     "concurrently": "^7.6.0"
-  },
-  "keywords": [
-    "vtc",
-    "transport",
-    "nextjs",
-    "nodejs",
-    "clerk",
-    "mongodb"
-  ],
-  "author": "VTC Connect Pro Team",
-  "license": "MIT"
+  }
 }
