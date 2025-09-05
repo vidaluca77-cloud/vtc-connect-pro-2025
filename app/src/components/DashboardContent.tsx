@@ -5,6 +5,8 @@ import { useUser } from '@clerk/nextjs';
 import { useApi } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
 import Link from 'next/link';
+import StatsCard from './StatsCard';
+import RevenueChart from './RevenueChart';
 
 interface DashboardStats {
   today: {
@@ -35,6 +37,17 @@ interface Activity {
   icon: string;
 }
 
+interface ChartData {
+  daily: {
+    rides: number[];
+    earnings: number[];
+  };
+  monthly: {
+    rides: number[];
+    earnings: number[];
+  };
+}
+
 export default function DashboardContent() {
   const { user } = useUser();
   const { isLoading: authLoading, isAuthenticated } = useAuth();
@@ -42,8 +55,10 @@ export default function DashboardContent() {
   
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [chartData, setChartData] = useState<ChartData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [chartPeriod, setChartPeriod] = useState<'daily' | 'monthly'>('daily');
 
   useEffect(() => {
     if (authLoading || !isAuthenticated) return;
@@ -53,10 +68,11 @@ export default function DashboardContent() {
       setError(null);
 
       try {
-        // Fetch dashboard stats and activity in parallel
-        const [statsResult, activityResult] = await Promise.all([
+        // Fetch dashboard stats, activity, and chart data in parallel
+        const [statsResult, activityResult, chartResult] = await Promise.all([
           api.dashboard.getStats(),
-          api.dashboard.getActivity()
+          api.dashboard.getActivity(),
+          api.dashboard.getChartData()
         ]);
 
         if (statsResult.success && statsResult.data) {
@@ -70,6 +86,12 @@ export default function DashboardContent() {
           setActivities(activityResult.data);
         } else {
           console.error('Failed to fetch activity:', activityResult.error);
+        }
+
+        if (chartResult.success && chartResult.data) {
+          setChartData(chartResult.data as ChartData);
+        } else {
+          console.error('Failed to fetch chart data:', chartResult.error);
         }
       } catch (err) {
         console.error('Dashboard fetch error:', err);
@@ -101,6 +123,31 @@ export default function DashboardContent() {
     if (diffHours < 24) return `Il y a ${diffHours}h`;
     
     return date.toLocaleDateString('fr-FR');
+  };
+
+  const getRevenueChartData = () => {
+    if (!chartData) return { labels: [], revenue: [], rides: [] };
+    
+    const data = chartPeriod === 'daily' ? chartData.daily : chartData.monthly;
+    
+    if (chartPeriod === 'daily') {
+      const labels = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+      return {
+        labels,
+        revenue: data.earnings,
+        rides: data.rides
+      };
+    } else {
+      const labels = [
+        'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin',
+        'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'
+      ];
+      return {
+        labels,
+        revenue: data.earnings,
+        rides: data.rides
+      };
+    }
   };
 
   if (authLoading || loading) {
@@ -163,64 +210,84 @@ export default function DashboardContent() {
           </p>
         </div>
 
-        {/* Stats Grid */}
+        {/* Stats Grid with new StatsCard component */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <span className="text-xl">🚗</span>
-              </div>
-              <h3 className="text-lg font-semibold">Courses du jour</h3>
-            </div>
-            <p className="text-3xl font-bold text-gray-900">{stats?.today.rides || 0}</p>
-            <p className="text-green-600 text-sm">
-              {stats?.week.rides ? `${stats.week.rides} cette semaine` : 'Aucune course cette semaine'}
-            </p>
-          </div>
+          <StatsCard
+            title="Courses du jour"
+            value={stats?.today.rides || 0}
+            subtitle={stats?.week.rides ? `${stats.week.rides} cette semaine` : 'Aucune course cette semaine'}
+            icon="🚗"
+            iconBgColor="bg-blue-100"
+            trend={stats?.today.rides && stats?.week.rides ? {
+              value: Math.round(((stats.today.rides / (stats.week.rides / 7)) - 1) * 100),
+              isPositive: stats.today.rides > (stats.week.rides / 7),
+              period: 'vs moyenne'
+            } : undefined}
+          />
 
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <span className="text-xl">💰</span>
-              </div>
-              <h3 className="text-lg font-semibold">Revenus du jour</h3>
-            </div>
-            <p className="text-3xl font-bold text-gray-900">
-              {stats?.today.earnings ? formatCurrency(stats.today.earnings) : '0€'}
-            </p>
-            <p className="text-green-600 text-sm">
-              {stats?.week.earnings ? `${formatCurrency(stats.week.earnings)} cette semaine` : 'Aucun revenu cette semaine'}
-            </p>
-          </div>
+          <StatsCard
+            title="Revenus du jour"
+            value={stats?.today.earnings ? formatCurrency(stats.today.earnings) : '0€'}
+            subtitle={stats?.week.earnings ? `${formatCurrency(stats.week.earnings)} cette semaine` : 'Aucun revenu cette semaine'}
+            icon="💰"
+            iconBgColor="bg-green-100"
+            trend={stats?.today.earnings && stats?.week.earnings ? {
+              value: Math.round(((stats.today.earnings / (stats.week.earnings / 7)) - 1) * 100),
+              isPositive: stats.today.earnings > (stats.week.earnings / 7),
+              period: 'vs moyenne'
+            } : undefined}
+          />
 
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <span className="text-xl">⏱️</span>
-              </div>
-              <h3 className="text-lg font-semibold">Temps de travail</h3>
-            </div>
-            <p className="text-3xl font-bold text-gray-900">
-              {stats?.today.hours ? `${stats.today.hours}h` : '0h'}
-            </p>
-            <p className="text-blue-600 text-sm">
-              {stats?.week.hours ? `${stats.week.hours}h cette semaine` : 'Objectif: 40h/semaine'}
-            </p>
-          </div>
+          <StatsCard
+            title="Temps de travail"
+            value={stats?.today.hours ? `${stats.today.hours}h` : '0h'}
+            subtitle={stats?.week.hours ? `${stats.week.hours}h cette semaine` : 'Objectif: 40h/semaine'}
+            icon="⏱️"
+            iconBgColor="bg-purple-100"
+          />
 
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-                <span className="text-xl">⭐</span>
-              </div>
-              <h3 className="text-lg font-semibold">Note moyenne</h3>
-            </div>
-            <p className="text-3xl font-bold text-gray-900">
-              {stats?.today.avgRating ? stats.today.avgRating.toFixed(1) : '5.0'}
-            </p>
-            <p className="text-yellow-600 text-sm">Très bon !</p>
-          </div>
+          <StatsCard
+            title="Note moyenne"
+            value={stats?.today.avgRating ? stats.today.avgRating.toFixed(1) : '5.0'}
+            subtitle="Très bon !"
+            icon="⭐"
+            iconBgColor="bg-orange-100"
+          />
         </div>
+
+        {/* Revenue Chart */}
+        {chartData && (
+          <div className="mb-8">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Évolution des revenus</h2>
+              <div className="flex bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => setChartPeriod('daily')}
+                  className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                    chartPeriod === 'daily' ? 'bg-white shadow-sm' : 'text-gray-600'
+                  }`}
+                >
+                  7 jours
+                </button>
+                <button
+                  onClick={() => setChartPeriod('monthly')}
+                  className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                    chartPeriod === 'monthly' ? 'bg-white shadow-sm' : 'text-gray-600'
+                  }`}
+                >
+                  12 mois
+                </button>
+              </div>
+            </div>
+            
+            <RevenueChart
+              data={getRevenueChartData()}
+              period={chartPeriod}
+              type="line"
+              height={400}
+            />
+          </div>
+        )}
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
@@ -248,17 +315,17 @@ export default function DashboardContent() {
             </div>
           </Link>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm">
+          <Link href="/finances" className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <span className="text-2xl">📱</span>
+                <span className="text-2xl">📊</span>
               </div>
               <div>
-                <h3 className="text-lg font-semibold">Nouvelle course</h3>
-                <p className="text-gray-600 text-sm">Ajouter une nouvelle course</p>
+                <h3 className="text-lg font-semibold">Gestion Financière</h3>
+                <p className="text-gray-600 text-sm">Revenus, dépenses et rapports</p>
               </div>
             </div>
-          </div>
+          </Link>
         </div>
 
         {/* Recent Activity */}
