@@ -11,7 +11,6 @@
   "dependencies": {
     "@clerk/nextjs": "^5.3.0",
     "@supabase/supabase-js": "^2.39.0",
-    "@supabase/ssr": "^0.5.1",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "lucide-react": "^0.263.1",
     "sonner": "^1.2.0",
