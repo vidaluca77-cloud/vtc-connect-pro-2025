@@ -10,7 +10,7 @@ export const supabase = createClient<Database>(
   supabaseAnonKey,
   {
     auth: {
-      persistSession: false
+      persistSession: true
     }
   }
 )
