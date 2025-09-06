@@ -1,10 +1,6 @@
 'use client'
-
 import { useAuth } from '@/contexts/AuthContext'
 import { useVTCData } from '@/hooks/useVTCData'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Euro, Car, TrendingUp, Target, AlertCircle, Loader2 } from 'lucide-react'
 
 export default function DashboardPage() {
@@ -27,8 +23,8 @@ export default function DashboardPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <AlertCircle className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-          <p className="text-muted-foreground text-lg">
+          <AlertCircle className="mx-auto h-12 w-12 text-gray-500 mb-4" />
+          <p className="text-gray-600 text-lg">
             Veuillez vous connecter pour accéder au dashboard.
           </p>
         </div>
@@ -41,8 +37,8 @@ export default function DashboardPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary mb-4" />
-          <p className="text-muted-foreground">Chargement des données...</p>
+          <Loader2 className="mx-auto h-8 w-8 animate-spin text-blue-600 mb-4" />
+          <p className="text-gray-600">Chargement des données...</p>
         </div>
       </div>
     )
@@ -51,239 +47,235 @@ export default function DashboardPage() {
   // État d'erreur
   if (error) {
     return (
-      <div className="container mx-auto p-6">
-        <Alert variant="destructive" className="mb-6">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Erreur lors du chargement des données: {error}
-            <button 
-              onClick={refreshData}
-              className="ml-4 underline hover:no-underline"
-            >
-              Réessayer
-            </button>
-          </AlertDescription>
-        </Alert>
+      <div className="min-h-screen p-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <div className="flex items-center">
+            <AlertCircle className="h-5 w-5 text-red-600 mr-2" />
+            <p className="text-red-800">
+              Erreur lors du chargement des données: {error}
+            </p>
+          </div>
+        </div>
+        <button 
+          onClick={refreshData}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+        >
+          Réessayer
+        </button>
       </div>
     )
   }
 
-  // Calculs dérivés
-  const averageRideValue = totalRides > 0 ? totalRevenue / totalRides : 0
-  const monthlyGoalProgress = monthlyGoals?.revenue > 0 
-    ? (monthlyRevenue / monthlyGoals.revenue) * 100 : 0
-  const ridesGoalProgress = monthlyGoals?.rides > 0 
-    ? (monthlyRides / monthlyGoals.rides) * 100 : 0
-
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* En-tête avec informations chauffeur */}
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* En-tête */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Tableau de bord VTC
           </h1>
-          <p className="text-muted-foreground mt-2">
-            Bienvenue {user.firstName} {user.lastName}
+          <p className="text-gray-600">
+            Bienvenue, {user.name || user.email}
           </p>
-          {user.licenseNumber && (
-            <Badge variant="outline" className="mt-2">
-              Licence: {user.licenseNumber}
-            </Badge>
-          )}
         </div>
-        <div className="text-right">
-          <p className="text-sm text-muted-foreground">
-            Dernière mise à jour: {new Date().toLocaleString('fr-FR')}
-          </p>
-          <button 
-            onClick={refreshData}
-            className="text-sm text-primary hover:underline mt-1"
-          >
-            Actualiser
-          </button>
+
+        {/* Métriques principales */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {/* Revenus du mois */}
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">
+                  Revenus du mois
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {monthlyRevenue?.toLocaleString('fr-FR')}€
+                </p>
+              </div>
+              <div className="bg-green-100 p-3 rounded-full">
+                <Euro className="h-6 w-6 text-green-600" />
+              </div>
+            </div>
+          </div>
+
+          {/* Courses du mois */}
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">
+                  Courses du mois
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {monthlyRides || 0}
+                </p>
+              </div>
+              <div className="bg-blue-100 p-3 rounded-full">
+                <Car className="h-6 w-6 text-blue-600" />
+              </div>
+            </div>
+          </div>
+
+          {/* Revenus totaux */}
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">
+                  Revenus totaux
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {totalRevenue?.toLocaleString('fr-FR')}€
+                </p>
+              </div>
+              <div className="bg-purple-100 p-3 rounded-full">
+                <TrendingUp className="h-6 w-6 text-purple-600" />
+              </div>
+            </div>
+          </div>
+
+          {/* Total courses */}
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">
+                  Total courses
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {totalRides || 0}
+                </p>
+              </div>
+              <div className="bg-orange-100 p-3 rounded-full">
+                <Target className="h-6 w-6 text-orange-600" />
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* Cartes de statistiques principales */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Chiffre d'affaires mensuel
-            </CardTitle>
-            <Euro className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {monthlyRevenue?.toFixed(2) || '0.00'}€
+        {/* Objectifs du mois */}
+        {monthlyGoals && (
+          <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
+            <div className="flex items-center mb-4">
+              <Target className="h-5 w-5 text-blue-600 mr-2" />
+              <h2 className="text-lg font-semibold text-gray-900">
+                Objectifs du mois
+              </h2>
             </div>
-            {monthlyGoals?.revenue && (
-              <div className="text-xs text-muted-foreground mt-1">
-                Objectif: {monthlyGoals.revenue}€ ({monthlyGoalProgress.toFixed(1)}%)
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Courses mensuelles
-            </CardTitle>
-            <Car className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {monthlyRides || 0}
-            </div>
-            {monthlyGoals?.rides && (
-              <div className="text-xs text-muted-foreground mt-1">
-                Objectif: {monthlyGoals.rides} ({ridesGoalProgress.toFixed(1)}%)
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total revenus
-            </CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {totalRevenue?.toFixed(2) || '0.00'}€
-            </div>
-            <div className="text-xs text-muted-foreground mt-1">
-              {totalRides || 0} courses au total
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Prix moyen par course
-            </CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {averageRideValue.toFixed(2)}€
-            </div>
-            <div className="text-xs text-muted-foreground mt-1">
-              Moyenne calculée
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Section des objectifs */}
-      {(monthlyGoals?.revenue || monthlyGoals?.rides) && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Progression des objectifs mensuels</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {monthlyGoals.revenue && (
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>Chiffre d'affaires</span>
-                  <span>{monthlyGoalProgress.toFixed(1)}%</span>
-                </div>
-                <div className="w-full bg-secondary rounded-full h-2">
-                  <div 
-                    className="bg-primary h-2 rounded-full transition-all duration-300" 
-                    style={{ width: `${Math.min(monthlyGoalProgress, 100)}%` }}
-                  ></div>
-                </div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  {monthlyRevenue?.toFixed(2) || 0}€ / {monthlyGoals.revenue}€
-                </div>
-              </div>
-            )}
-            
-            {monthlyGoals.rides && (
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>Nombre de courses</span>
-                  <span>{ridesGoalProgress.toFixed(1)}%</span>
-                </div>
-                <div className="w-full bg-secondary rounded-full h-2">
-                  <div 
-                    className="bg-primary h-2 rounded-full transition-all duration-300" 
-                    style={{ width: `${Math.min(ridesGoalProgress, 100)}%` }}
-                  ></div>
-                </div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  {monthlyRides || 0} / {monthlyGoals.rides} courses
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Courses récentes */}
-      {rides && rides.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Courses récentes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {rides.slice(0, 5).map((ride, index) => (
-                <div key={ride.id || index} className="flex justify-between items-center border-b pb-2 last:border-b-0">
-                  <div>
-                    <p className="font-medium">
-                      {ride.startAddress} → {ride.endAddress}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {ride.date ? new Date(ride.date).toLocaleDateString('fr-FR') : 'Date inconnue'}
-                      {ride.customerName && ` • ${ride.customerName}`}
-                    </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Objectif revenus */}
+              {monthlyGoals.revenue && (
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-medium text-gray-600">
+                      Revenus
+                    </span>
+                    <span className="text-sm font-medium text-gray-900">
+                      {monthlyRevenue?.toLocaleString('fr-FR')}€ / {monthlyGoals.revenue.toLocaleString('fr-FR')}€
+                    </span>
                   </div>
-                  <div className="text-right">
-                    <p className="font-bold">{ride.price?.toFixed(2) || '0.00'}€</p>
-                    <Badge 
-                      variant={ride.status === 'completed' ? 'default' : 'secondary'}
-                      className="text-xs"
-                    >
-                      {ride.status === 'completed' ? 'Terminée' : 
-                       ride.status === 'in_progress' ? 'En cours' :
-                       ride.status === 'pending' ? 'En attente' : ride.status}
-                    </Badge>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-green-600 h-2 rounded-full transition-all duration-300"
+                      style={{ 
+                        width: `${Math.min((monthlyRevenue || 0) / monthlyGoals.revenue * 100, 100)}%` 
+                      }}
+                    ></div>
                   </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {Math.round((monthlyRevenue || 0) / monthlyGoals.revenue * 100)}% atteint
+                  </p>
                 </div>
-              ))}
+              )}
+
+              {/* Objectif courses */}
+              {monthlyGoals.rides && (
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-medium text-gray-600">
+                      Courses
+                    </span>
+                    <span className="text-sm font-medium text-gray-900">
+                      {monthlyRides || 0} / {monthlyGoals.rides}
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                      style={{ 
+                        width: `${Math.min((monthlyRides || 0) / monthlyGoals.rides * 100, 100)}%` 
+                      }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {Math.round((monthlyRides || 0) / monthlyGoals.rides * 100)}% atteint
+                  </p>
+                </div>
+              )}
             </div>
-            {rides.length > 5 && (
-              <div className="text-center mt-4">
-                <p className="text-sm text-muted-foreground">
-                  Et {rides.length - 5} autres courses...
+          </div>
+        )}
+
+        {/* Courses récentes */}
+        <div className="bg-white rounded-lg shadow-sm border">
+          <div className="p-6 border-b">
+            <h2 className="text-lg font-semibold text-gray-900">
+              Courses récentes
+            </h2>
+          </div>
+          <div className="p-6">
+            {rides && rides.length > 0 ? (
+              <div className="space-y-4">
+                {rides.slice(0, 5).map((ride, index) => (
+                  <div key={ride.id || index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3">
+                        <div className="bg-blue-100 p-2 rounded-full">
+                          <Car className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">
+                            {ride.pickup} → {ride.destination}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {new Date(ride.date).toLocaleDateString('fr-FR', {
+                              day: 'numeric',
+                              month: 'short',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-gray-900">
+                        {ride.amount}€
+                      </p>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        ride.status === 'completed' 
+                          ? 'bg-green-100 text-green-800'
+                          : ride.status === 'cancelled'
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {ride.status === 'completed' && 'Terminée'}
+                        {ride.status === 'cancelled' && 'Annulée'}
+                        {ride.status === 'pending' && 'En attente'}
+                        {ride.status === 'in_progress' && 'En cours'}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <Car className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <p className="text-gray-600">
+                  Aucune course enregistrée pour le moment.
                 </p>
               </div>
             )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Message si aucune donnée */}
-      {(!rides || rides.length === 0) && (
-        <Card>
-          <CardContent className="text-center py-8">
-            <Car className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">
-              Aucune course enregistrée pour le moment.
-            </p>
-            <p className="text-sm text-muted-foreground mt-2">
-              Commencez à enregistrer vos courses pour voir vos statistiques ici.
-            </p>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
