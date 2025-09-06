@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
-import { ClerkProvider, SignedIn, SignedOut, UserButton, SignInButton } from '@clerk/nextjs';
+import {
+  ClerkProvider,
+  SignedIn,
+  SignedOut,
+  UserButton,
+  SignInButton
+} from '@clerk/nextjs';
 import { Toaster } from 'sonner';
 import "./globals.css";
-
-// Force dynamic rendering to avoid Clerk validation issues during static build
-// export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: "VTC Connect Pro 2025",
@@ -33,16 +36,22 @@ export default function RootLayout({
                     <UserButton />
                   </SignedIn>
                   <SignedOut>
-                    <SignInButton />
+                    <SignInButton mode="modal">
+                      <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                        Se connecter
+                      </button>
+                    </SignInButton>
                   </SignedOut>
                 </div>
               </div>
             </div>
           </header>
+          
           <main className="flex-1">
             {children}
           </main>
-          <Toaster />
+          
+          <Toaster position="top-right" richColors />
         </body>
       </html>
     </ClerkProvider>
