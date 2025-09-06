@@ -1,20 +1,13 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-const isProtectedRoute = createRouteMatcher([
-  '/dashboard(.*)',
-  '/finances(.*)',
-  '/planning(.*)',
-  '/community(.*)',
-  '/profile(.*)',
-  '/ia(.*)',
-  '/web(.*)',
-]);
-
-export default clerkMiddleware(async (auth, req) => {
-  if (isProtectedRoute(req)) {
-    await auth.protect();
-  }
-});
+// Simple middleware without Clerk authentication
+// Authentication is now handled client-side with Supabase
+export function middleware(request: NextRequest) {
+  // Allow all requests to pass through
+  // Client-side authentication with Supabase will handle protected routes
+  return NextResponse.next();
+}
 
 export const config = {
   matcher: [
