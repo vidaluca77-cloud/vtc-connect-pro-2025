@@ -2,15 +2,18 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { User } from '@supabase/auth-helpers-nextjs'
+import { createBrowserClient } from '@supabase/ssr'
+import { User } from '@supabase/supabase-js'
 import Link from 'next/link'
 
 export default function Navigation() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
-  const supabase = createClientComponentClient()
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
 
   useEffect(() => {
     // Récupérer la session actuelle
