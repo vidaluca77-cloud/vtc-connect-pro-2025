@@ -15,15 +15,16 @@
     "start:app": "npm run start --workspace=app",
     "lint": "npm run lint --workspace=app",
     "lint:app": "npm run lint --workspace=app",
-    "vercel-build": "npm ci --include=dev --legacy-peer-deps && npm run build --workspace=app",
+    "vercel-build": "npm install --legacy-peer-deps && npm run build --workspace=app",
+    "vercel-install": "npm install --legacy-peer-deps",
     "postinstall": "npm run postinstall --workspace=app --if-present",
     "verify-deployment": "./scripts/verify-deployment.sh",
     "install:all": "npm install && npm install --workspace=app"
   },
   "dependencies": {
     "next": "15.5.2",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "lucide-react": "^0.263.1",
     "@supabase/supabase-js": "^2.39.0"
   },
