@@ -1,13 +1,13 @@
 'use client'
 
-import { useUser } from '@clerk/nextjs'
+import { useAuth } from '@/contexts/AuthContext'
 import { useVTCData } from '@/hooks/useVTCData'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Euro, Car, TrendingUp, Target, AlertCircle } from 'lucide-react'
 
 export default function DashboardPage() {
-  const { user } = useUser()
+  const { user } = useAuth()
   const {
     monthlyRevenue,
     monthlyRides,

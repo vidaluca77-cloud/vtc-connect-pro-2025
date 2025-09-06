@@ -1,12 +1,12 @@
 'use client';
 
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from '../contexts/AuthContext';
 import { useVTCData } from '../hooks/useVTCData';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Calendar, Clock, Car } from 'lucide-react';
 
 export default function PlanningContent() {
-  const { user } = useUser();
+  const { user } = useAuth();
   const { rides, loading } = useVTCData();
 
   if (!user) {

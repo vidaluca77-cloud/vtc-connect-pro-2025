@@ -1,12 +1,25 @@
-import { auth } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
-import { UserButton } from '@clerk/nextjs';
+'use client';
 
-export default async function ProfilePage() {
-  const { userId } = await auth();
+import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+
+export default function ProfilePage() {
+  const { user, isLoaded, signOut } = useAuth();
+  const router = useRouter();
   
-  if (!userId) {
-    redirect('/sign-in');
+  useEffect(() => {
+    if (isLoaded && !user) {
+      router.push('/auth/signin');
+    }
+  }, [user, isLoaded, router]);
+
+  if (!isLoaded) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    return null; // Will redirect
   }
 
   return (
@@ -23,11 +36,28 @@ export default async function ProfilePage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Gestion du compte
+                    Email
                   </label>
-                  <div className="flex items-center gap-4">
-                    <UserButton showName />
-                  </div>
+                  <p className="text-gray-900">{user.email}</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nom
+                  </label>
+                  <p className="text-gray-900">{user.name || 'Non défini'}</p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Actions
+                  </label>
+                  <button
+                    onClick={() => signOut()}
+                    className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                  >
+                    Se déconnecter
+                  </button>
                 </div>
                 
                 <div>

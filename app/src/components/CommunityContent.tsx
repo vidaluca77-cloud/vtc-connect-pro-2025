@@ -1,9 +1,9 @@
 'use client';
 
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function CommunityContent() {
-  const { user } = useUser();
+  const { user } = useAuth();
 
   if (!user) {
     return (
