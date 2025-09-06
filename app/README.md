@@ -1,15 +1,14 @@
-# VTC Connect Pro 2025 - Next.js App with Clerk Authentication
+# VTC Connect Pro 2025 - Next.js App with Supabase Authentication
 
-Cette application Next.js remplace l'ancienne structure React et intègre l'authentification Clerk pour Vercel.
+Cette application Next.js utilise l'authentification Supabase pour une gestion moderne et sécurisée des utilisateurs.
 
 ## 🏗 Structure de l'Application
 
 ```
 app/src/app/
-├── layout.tsx          # Layout principal avec ClerkProvider
+├── layout.tsx          # Layout principal avec AuthProvider
 ├── page.tsx            # Page d'accueil avec authentification
-├── sign-in/            # Page de connexion Clerk
-├── sign-up/            # Page d'inscription Clerk
+├── auth/               # Pages d'authentification Supabase
 ├── dashboard/          # Tableau de bord principal
 ├── ia/                 # Interface Intelligence Artificielle
 ├── web/                # Interface Web (hub principal)
@@ -19,26 +18,28 @@ app/src/app/
 └── profile/            # Profil utilisateur
 ```
 
-## 🔐 Authentification Clerk
+## 🔐 Authentification Supabase
 
-L'application utilise Clerk pour l'authentification, permettant aux utilisateurs de :
+L'application utilise Supabase pour l'authentification, permettant aux utilisateurs de :
+
 - Créer un compte facilement
 - Se connecter de manière sécurisée
 - Gérer leur profil
 - Accéder aux fonctionnalités protégées
+- Synchronisation automatique des données
 
 ## 🚀 Déploiement Vercel
 
 ### Variables d'environnement requises :
 
-1. **NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY** : Clé publique Clerk
-2. **CLERK_SECRET_KEY** : Clé secrète Clerk
+1. **NEXT_PUBLIC_SUPABASE_URL** : URL de votre projet Supabase
+2. **NEXT_PUBLIC_SUPABASE_ANON_KEY** : Clé anonyme publique Supabase
 3. **NEXT_PUBLIC_API_URL** : URL de l'API backend (optionnel)
 
 ### Étapes de déploiement :
 
 1. Connecter le repository à Vercel
-2. Configurer les variables d'environnement
+2. Configurer les variables d'environnement Supabase
 3. Déployer automatiquement
 
 ## 🛠 Développement Local
@@ -57,11 +58,13 @@ npm run build
 ## 📱 Pages et Fonctionnalités
 
 ### Pages Publiques
+
 - **/** : Page d'accueil avec présentation
-- **/sign-in** : Connexion utilisateur
-- **/sign-up** : Inscription utilisateur
+- **/auth/signin** : Connexion utilisateur
+- **/auth/signup** : Inscription utilisateur
 
 ### Pages Protégées (nécessitent une authentification)
+
 - **/dashboard** : Tableau de bord principal
 - **/ia** : Outils d'intelligence artificielle
 - **/web** : Hub des fonctionnalités web
@@ -72,22 +75,23 @@ npm run build
 
 ## 🔧 Configuration
 
-Le fichier `.env.local` doit contenir :
+Le fichier .env.local doit contenir :
 
 ```env
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
-CLERK_SECRET_KEY=sk_test_...
-NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
-NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 NEXT_PUBLIC_API_URL=http://localhost:5000/api
 ```
 
-## 🤝 Intégration avec l'API Backend
+## 🤝 Intégration avec Supabase
 
-L'application est conçue pour s'intégrer avec l'API Node.js existante dans le dossier `backend/`. 
-Les routes protégées utilisent l'authentification Clerk côté client et peuvent valider les tokens côté serveur.
+L'application utilise Supabase pour :
+
+- Authentification utilisateur
+- Base de données temps réel
+- Stockage de fichiers
+- APIs automatiques
+- Synchronisation des profils utilisateur
 
 ## 📄 Licence
 
