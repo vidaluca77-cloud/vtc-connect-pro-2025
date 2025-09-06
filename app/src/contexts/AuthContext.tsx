@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { SupabaseClient, User as SupabaseUser } from '@supabase/supabase-js';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 
 interface User {
@@ -20,7 +20,6 @@ interface AuthContextType {
   isSignedIn: boolean;
   signOut: () => Promise<void>;
   logout: () => Promise<void>; // Alias for signOut
-  supabase: SupabaseClient; // Expose supabase client
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -45,19 +44,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        const supabaseUser = session?.user;
-        if (supabaseUser) {
-          setUser(transformSupabaseUser(supabaseUser));
-          setIsSignedIn(true);
-        } else {
-          setUser(null);
-          setIsSignedIn(false);
-        }
-        setIsLoaded(true);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const supabaseUser = session?.user;
+      if (supabaseUser) {
+        setUser(transformSupabaseUser(supabaseUser));
+        setIsSignedIn(true);
+      } else {
+        setUser(null);
+        setIsSignedIn(false);
       }
-    );
+      setIsLoaded(true);
+    });
 
     return () => subscription.unsubscribe();
   }, []);
@@ -89,7 +86,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isSignedIn,
     signOut,
     logout: signOut, // Alias for signOut
-    supabase, // Expose supabase client for additional auth methods
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
