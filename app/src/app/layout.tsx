@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ClerkProvider } from '@clerk/nextjs';
+import { AuthProvider } from '../../contexts/AuthContext';
 import { Toaster } from 'sonner';
 import "./globals.css";
 
@@ -14,7 +14,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <AuthProvider>
       <html lang="fr">
         <body className="font-sans antialiased">
           <header className="bg-white shadow-sm border-b border-gray-200">
@@ -34,6 +34,6 @@ export default function RootLayout({
           <Toaster />
         </body>
       </html>
-    </ClerkProvider>
+    </AuthProvider>
   );
 }
