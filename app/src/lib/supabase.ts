@@ -1,70 +1,67 @@
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from './database.types';
+import { createClient } from '@supabase/supabase-js'
 
-// Variables d'environnement Supabase
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+// Create a simple client that works in both server and client
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder_key'
 
-if (!supabaseUrl) {
-  throw new Error('Variable d\'environnement NEXT_PUBLIC_SUPABASE_URL manquante');
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: false
+  }
+})
+
+export type Profile = {
+  id: string
+  clerk_user_id: string
+  email: string | null
+  first_name: string | null
+  last_name: string | null
+  phone: string | null
+  licence_vtc: string | null
+  vehicle_brand: string | null
+  vehicle_model: string | null
+  vehicle_plate: string | null
+  vehicle_year: number | null
+  created_at: string
+  updated_at: string
 }
 
-if (!supabaseAnonKey) {
-  throw new Error('Variable d\'environnement NEXT_PUBLIC_SUPABASE_ANON_KEY manquante');
+export type Ride = {
+  id: string
+  user_id: string
+  platform: string
+  pickup_address: string
+  destination_address: string
+  client_name: string | null
+  distance_km: number | null
+  duration_minutes: number | null
+  price_euros: number
+  commission_euros: number | null
+  net_earnings: number | null
+  ride_date: string
+  status: string
+  notes: string | null
+  created_at: string
 }
 
-// Créer le client Supabase avec typages
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-  },
-  realtime: {
-    // Paramètres en temps réel pour les notifications push
-    params: {
-      eventsPerSecond: 10,
-    },
-  },
-});
+export type Expense = {
+  id: string
+  user_id: string
+  category: string
+  amount_euros: number
+  description: string | null
+  expense_date: string
+  receipt_url: string | null
+  created_at: string
+}
 
-// Export des types utiles
-export type { Database } from './database.types';
-export type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row'];
-export type TablesInsert<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Insert'];
-export type TablesUpdate<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Update'];
-export type Enums<T extends keyof Database['public']['Enums']> = Database['public']['Enums'][T];
-
-// Helper functions pour les opérations communes
-export const supabaseHelpers = {
-  // Authentification
-  auth: {
-    signUp: (email: string, password: string) => 
-      supabase.auth.signUp({ email, password }),
-    signIn: (email: string, password: string) => 
-      supabase.auth.signInWithPassword({ email, password }),
-    signOut: () => supabase.auth.signOut(),
-    getCurrentUser: () => supabase.auth.getUser(),
-  },
-  
-  // Storage pour les fichiers
-  storage: {
-    uploadFile: (bucket: string, path: string, file: File) =>
-      supabase.storage.from(bucket).upload(path, file),
-    downloadFile: (bucket: string, path: string) =>
-      supabase.storage.from(bucket).download(path),
-    getPublicUrl: (bucket: string, path: string) =>
-      supabase.storage.from(bucket).getPublicUrl(path),
-    deleteFile: (bucket: string, path: string) =>
-      supabase.storage.from(bucket).remove([path]),
-  },
-  
-  // Utilitaires de formatage
-  formatters: {
-    formatDate: (date: string) => new Date(date).toLocaleDateString('fr-FR'),
-    formatDateTime: (date: string) => new Date(date).toLocaleString('fr-FR'),
-    formatCurrency: (amount: number) => 
-      new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(amount),
-  },
-};
-
-export default supabase;
+export type MonthlyGoal = {
+  id: string
+  user_id: string
+  month: number
+  year: number
+  revenue_goal: number
+  rides_goal: number
+  hours_goal: number | null
+  created_at: string
+}
