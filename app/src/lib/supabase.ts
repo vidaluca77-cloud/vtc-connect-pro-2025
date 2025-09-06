@@ -2,14 +2,18 @@ import { createClient } from '@supabase/supabase-js'
 import type { Database } from './database.types'
 
 // Create a simple client that works in both server and client
-const supabaseUrl = process.env.SUPABASE__URL || 'https://placeholder.supabase.co'
-const supabaseAnonKey = process.env.SUPABASE__ANON_KEY || 'placeholder_key'
+const supabaseUrl = process.env.SUPABASE__NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
+const supabaseAnonKey = process.env.SUPABASE__NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder_key'
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: false
+export const supabase = createClient<Database>(
+  supabaseUrl,
+  supabaseAnonKey,
+  {
+    auth: {
+      persistSession: false
+    }
   }
-})
+)
 
 // Export database types for convenience
 export type Profile = Database['public']['Tables']['profiles']['Row']
