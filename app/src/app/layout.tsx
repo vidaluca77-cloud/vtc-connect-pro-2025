@@ -4,7 +4,7 @@ import { Toaster } from 'sonner';
 import "./globals.css";
 
 // Force dynamic rendering to avoid Clerk validation issues during static build
-export const dynamic = 'force-dynamic';
+// export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: "VTC Connect Pro 2025",
@@ -24,7 +24,9 @@ export default function RootLayout({
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex justify-between items-center h-16">
                 <div className="flex items-center">
-                  <h1 className="text-xl font-bold text-gray-900">VTC Connect Pro</h1>
+                  <h1 className="text-xl font-bold text-gray-900">
+                    VTC Connect Pro
+                  </h1>
                 </div>
                 <div className="flex items-center space-x-4">
                   <SignedIn>
@@ -37,10 +39,10 @@ export default function RootLayout({
               </div>
             </div>
           </header>
-          <main>
+          <main className="flex-1">
             {children}
           </main>
-          <Toaster position="top-right" />
+          <Toaster />
         </body>
       </html>
     </ClerkProvider>
