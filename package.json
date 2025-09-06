@@ -16,7 +16,6 @@
     "lint": "npm run lint --workspace=app",
     "lint:app": "npm run lint --workspace=app",
     "vercel-build": "npm ci --include=dev --legacy-peer-deps && npm run build --workspace=app",
-    "vercel-install": "npm ci --include=dev --legacy-peer-deps",
     "postinstall": "npm run postinstall --workspace=app --if-present",
     "verify-deployment": "./scripts/verify-deployment.sh",
     "install:all": "npm install && npm install --workspace=app"
