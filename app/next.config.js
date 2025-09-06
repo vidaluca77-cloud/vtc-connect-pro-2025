@@ -13,8 +13,6 @@ const nextConfig = {
       },
     ],
   },
-  // Use standalone output for better compatibility
-  output: 'standalone',
   // Disable ESLint during build for now
   eslint: {
     ignoreDuringBuilds: true,

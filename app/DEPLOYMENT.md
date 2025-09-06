@@ -34,9 +34,9 @@
 
 2. **Paramètres de build :**
    - Framework Preset: Next.js
-   - Build Command: `npm run build`
-   - Output Directory: `.next`
-   - Install Command: `npm install`
+   - Build Command: `npm run vercel-build`
+   - Output Directory: `app/.next`
+   - Install Command: `npm run vercel-install`
 
 ### 4. Configuration DNS (Optionnel)
 
