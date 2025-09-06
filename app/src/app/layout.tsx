@@ -1,11 +1,5 @@
 import type { Metadata } from "next";
-import {
-  ClerkProvider,
-  SignedIn,
-  SignedOut,
-  UserButton,
-  SignInButton
-} from '@clerk/nextjs';
+import { ClerkProvider } from '@clerk/nextjs';
 import { Toaster } from 'sonner';
 import "./globals.css";
 
@@ -31,27 +25,13 @@ export default function RootLayout({
                     VTC Connect Pro
                   </h1>
                 </div>
-                <div className="flex items-center space-x-4">
-                  <SignedIn>
-                    <UserButton />
-                  </SignedIn>
-                  <SignedOut>
-                    <SignInButton mode="modal">
-                      <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
-                        Se connecter
-                      </button>
-                    </SignInButton>
-                  </SignedOut>
-                </div>
               </div>
             </div>
           </header>
-          
-          <main className="flex-1">
+          <main>
             {children}
           </main>
-          
-          <Toaster position="top-right" richColors />
+          <Toaster />
         </body>
       </html>
     </ClerkProvider>
