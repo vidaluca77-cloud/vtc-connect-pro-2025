@@ -1,12 +1,12 @@
 'use client';
 
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from '../contexts/AuthContext';
 import { useVTCData } from '../hooks/useVTCData';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Euro, TrendingUp, TrendingDown } from 'lucide-react';
 
 export default function FinancesContent() {
-  const { user } = useUser();
+  const { user } = useAuth();
   const { 
     monthlyRevenue, 
     totalRevenue, 

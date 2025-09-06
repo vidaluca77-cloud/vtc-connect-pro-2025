@@ -1,16 +1,8 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { createClient, SupabaseClient, User as SupabaseUser } from '@supabase/supabase-js';
+'use client';
 
-// Initialize Supabase client with persistSession: true
-const supabase: SupabaseClient = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  {
-    auth: {
-      persistSession: true,
-    },
-  }
-);
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { SupabaseClient, User as SupabaseUser } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 
 interface User {
   id: string;

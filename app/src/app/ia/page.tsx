@@ -1,11 +1,25 @@
-import { auth } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
+'use client';
 
-export default async function IAPage() {
-  const { userId } = await auth();
+import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+
+export default function IAPage() {
+  const { user, isLoaded } = useAuth();
+  const router = useRouter();
   
-  if (!userId) {
-    redirect('/sign-in');
+  useEffect(() => {
+    if (isLoaded && !user) {
+      router.push('/auth/signin');
+    }
+  }, [user, isLoaded, router]);
+
+  if (!isLoaded) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    return null; // Will redirect
   }
 
   return (
