@@ -34,6 +34,7 @@ export default function SignInPage() {
         router.refresh()
       }
     } catch (err) {
+      console.error('Error during sign in:', err)
       setError('Une erreur inattendue s\'est produite')
     } finally {
       setIsLoading(false)
@@ -45,18 +46,14 @@ export default function SignInPage() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Connexion à VTC Connect Pro
+            Connexion à votre compte
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Accédez à votre tableau de bord chauffeur VTC
-          </p>
         </div>
-        
         <form className="mt-8 space-y-6" onSubmit={handleSignIn}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
               <label htmlFor="email" className="sr-only">
-                Adresse email
+                Email
               </label>
               <input
                 id="email"
