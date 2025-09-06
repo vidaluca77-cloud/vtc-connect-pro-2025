@@ -1,8 +1,8 @@
 {
   "version": 2,
   "name": "vtc-connect-pro-2025",
-  "buildCommand": "cd app && npm run build",
-  "installCommand": "npm install --legacy-peer-deps && cd app && npm install",
+  "buildCommand": "npm run vercel-build",
+  "installCommand": "npm run vercel-install",
   "outputDirectory": "app/.next",
   "regions": ["fra1"],
   "cleanUrls": true,
