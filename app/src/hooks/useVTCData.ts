@@ -1,7 +1,5 @@
 'use client'
-
 import { useState, useEffect } from 'react'
-import { useUser } from '@clerk/nextjs'
 import { supabase } from '@/lib/supabase'
 import type { Profile, Ride, Expense, MonthlyGoal } from '@/lib/supabase'
 
@@ -20,7 +18,6 @@ export interface DashboardData {
 }
 
 export const useVTCData = () => {
-  const { user } = useUser()
   const [data, setData] = useState<DashboardData>({
     profile: null,
     rides: [],
@@ -36,173 +33,118 @@ export const useVTCData = () => {
   })
 
   useEffect(() => {
-    if (!user) {
-      setData(prev => ({ ...prev, loading: false }))
-      return
-    }
-    fetchUserData()
-  }, [user])
+    const fetchVTCData = async () => {
+      try {
+        setData(prev => ({ ...prev, loading: true, error: null }))
 
-  const fetchUserData = async () => {
-    try {
-      setData(prev => ({ ...prev, loading: true, error: null }))
-      const clerkUserId = user!.id
+        // Get current user from Supabase Auth
+        const { data: { user }, error: authError } = await supabase.auth.getUser()
+        
+        if (authError) {
+          throw new Error(`Authentication error: ${authError.message}`)
+        }
 
-      // 1. Récupérer profil utilisateur
-      let { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('clerk_user_id', clerkUserId)
-        .single()
+        if (!user) {
+          setData(prev => ({ 
+            ...prev, 
+            loading: false, 
+            error: 'User not authenticated' 
+          }))
+          return
+        }
 
-      if (profileError && profileError.code === 'PGRST116') {
-        // Créer profil s'il n'existe pas
-        const { data: newProfile, error: createError } = await supabase
+        const userId = user.id
+
+        // Fetch profile
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .insert({
-            clerk_user_id: clerkUserId,
-            email: user!.primaryEmailAddress?.emailAddress || '',
-            first_name: user!.firstName || '',
-            last_name: user!.lastName || '',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
-          .select()
+          .select('*')
+          .eq('id', userId)
           .single()
 
-        if (createError) throw createError
-        profile = newProfile
-      } else if (profileError) {
-        throw profileError
+        if (profileError && profileError.code !== 'PGRST116') {
+          throw new Error(`Profile fetch error: ${profileError.message}`)
+        }
+
+        // Fetch rides
+        const { data: rides, error: ridesError } = await supabase
+          .from('rides')
+          .select('*')
+          .eq('user_id', userId)
+          .order('date', { ascending: false })
+
+        if (ridesError) {
+          throw new Error(`Rides fetch error: ${ridesError.message}`)
+        }
+
+        // Fetch expenses
+        const { data: expenses, error: expensesError } = await supabase
+          .from('expenses')
+          .select('*')
+          .eq('user_id', userId)
+          .order('date', { ascending: false })
+
+        if (expensesError) {
+          throw new Error(`Expenses fetch error: ${expensesError.message}`)
+        }
+
+        // Fetch monthly goals
+        const currentMonth = new Date().getMonth() + 1
+        const currentYear = new Date().getFullYear()
+        
+        const { data: monthlyGoals, error: goalsError } = await supabase
+          .from('monthly_goals')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('month', currentMonth)
+          .eq('year', currentYear)
+          .single()
+
+        if (goalsError && goalsError.code !== 'PGRST116') {
+          throw new Error(`Goals fetch error: ${goalsError.message}`)
+        }
+
+        // Calculate metrics
+        const currentMonthStart = new Date(currentYear, currentMonth - 1, 1).toISOString()
+        const nextMonthStart = new Date(currentYear, currentMonth, 1).toISOString()
+
+        const monthlyRides = rides?.filter(ride => 
+          ride.date >= currentMonthStart && ride.date < nextMonthStart
+        ) || []
+
+        const monthlyRevenue = monthlyRides.reduce((sum, ride) => sum + (ride.amount || 0), 0)
+        const totalRevenue = rides?.reduce((sum, ride) => sum + (ride.amount || 0), 0) || 0
+        const totalRides = rides?.length || 0
+        
+        const goalProgress = monthlyGoals?.revenue_goal 
+          ? (monthlyRevenue / monthlyGoals.revenue_goal) * 100 
+          : 0
+
+        setData({
+          profile: profile || null,
+          rides: rides || [],
+          expenses: expenses || [],
+          monthlyGoals: monthlyGoals || null,
+          monthlyRevenue,
+          monthlyRides: monthlyRides.length,
+          totalRevenue,
+          totalRides,
+          goalProgress,
+          loading: false,
+          error: null
+        })
+      } catch (error) {
+        console.error('Error fetching VTC data:', error)
+        setData(prev => ({
+          ...prev,
+          loading: false,
+          error: error instanceof Error ? error.message : 'An unexpected error occurred'
+        }))
       }
-
-      // 2. Récupérer courses
-      const { data: rides, error: ridesError } = await supabase
-        .from('rides')
-        .select('*')
-        .eq('user_id', profile.id)
-        .order('ride_date', { ascending: false })
-
-      if (ridesError) throw ridesError
-
-      // 3. Récupérer dépenses
-      const { data: expenses, error: expensesError } = await supabase
-        .from('expenses')
-        .select('*')
-        .eq('user_id', profile.id)
-        .order('expense_date', { ascending: false })
-
-      if (expensesError) throw expensesError
-
-      // 4. Récupérer objectifs mensuels
-      const currentMonth = new Date().getMonth() + 1
-      const currentYear = new Date().getFullYear()
-
-      const { data: monthlyGoals, error: goalsError } = await supabase
-        .from('monthly_goals')
-        .select('*')
-        .eq('user_id', profile.id)
-        .eq('month', currentMonth)
-        .eq('year', currentYear)
-        .single()
-
-      // Calculer statistiques
-      const totalRevenue = rides?.reduce((sum, ride) => sum + (ride.price_euros || 0), 0) || 0
-      const totalRides = rides?.length || 0
-
-      const monthlyRides = rides?.filter(ride => {
-        const rideDate = new Date(ride.ride_date)
-        return rideDate.getMonth() === (currentMonth - 1) && rideDate.getFullYear() === currentYear
-      }) || []
-
-      const monthlyRevenue = monthlyRides.reduce((sum, ride) => sum + (ride.price_euros || 0), 0)
-      const goalProgress = monthlyGoals?.revenue_goal 
-        ? Math.min((monthlyRevenue / monthlyGoals.revenue_goal) * 100, 100)
-        : 0
-
-      setData({
-        profile,
-        rides: rides || [],
-        expenses: expenses || [],
-        monthlyGoals,
-        monthlyRevenue,
-        monthlyRides: monthlyRides.length,
-        totalRevenue,
-        totalRides,
-        goalProgress,
-        loading: false,
-        error: null
-      })
-
-    } catch (error) {
-      console.error('Error fetching VTC data:', error)
-      setData(prev => ({
-        ...prev,
-        loading: false,
-        error: error instanceof Error ? error.message : 'Une erreur est survenue'
-      }))
     }
-  }
 
-  const addRide = async (rideData: Record<string, unknown>) => {
-    if (!data.profile) throw new Error('Profil utilisateur requis')
+    fetchVTCData()
+  }, [])
 
-    const { data: newRide, error } = await supabase
-      .from('rides')
-      .insert({
-        user_id: data.profile.id,
-        ...rideData,
-        created_at: new Date().toISOString()
-      })
-      .select()
-      .single()
-
-    if (error) throw error
-    await fetchUserData()
-    return newRide
-  }
-
-  const addExpense = async (expenseData: Record<string, unknown>) => {
-    if (!data.profile) throw new Error('Profil utilisateur requis')
-
-    const { data: newExpense, error } = await supabase
-      .from('expenses')
-      .insert({
-        user_id: data.profile.id,
-        ...expenseData,
-        created_at: new Date().toISOString()
-      })
-      .select()
-      .single()
-
-    if (error) throw error
-    await fetchUserData()
-    return newExpense
-  }
-
-  const updateProfile = async (profileData: Record<string, unknown>) => {
-    if (!data.profile) throw new Error('Profil utilisateur requis')
-
-    const { data: updatedProfile, error } = await supabase
-      .from('profiles')
-      .update({
-        ...profileData,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', data.profile.id)
-      .select()
-      .single()
-
-    if (error) throw error
-    await fetchUserData()
-    return updatedProfile
-  }
-
-  return {
-    ...data,
-    addRide,
-    addExpense,
-    updateProfile,
-    refreshData: fetchUserData
-  }
+  return data
 }
