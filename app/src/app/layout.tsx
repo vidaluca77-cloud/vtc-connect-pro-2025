@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ClerkProvider, SignedIn, SignedOut, UserButton, SignInButton } from '@clerk/nextjs';
+import { Toaster } from 'sonner';
 import "./globals.css";
 
 // Force dynamic rendering to avoid Clerk validation issues during static build
@@ -39,6 +40,7 @@ export default function RootLayout({
           <main>
             {children}
           </main>
+          <Toaster position="top-right" />
         </body>
       </html>
     </ClerkProvider>
