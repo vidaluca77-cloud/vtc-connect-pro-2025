@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase/client'
 import type { Profile, Ride, Expense, MonthlyGoal } from '@/lib/supabase'
 
 export interface DashboardData {
@@ -36,14 +36,17 @@ export const useVTCData = () => {
     const fetchVTCData = async () => {
       try {
         setData(prev => ({ ...prev, loading: true, error: null }))
-
+        
+        // Create Supabase client for this request
+        const supabase = createClient()
+        
         // Get current user from Supabase Auth
         const { data: { user }, error: authError } = await supabase.auth.getUser()
         
         if (authError) {
           throw new Error(`Authentication error: ${authError.message}`)
         }
-
+        
         if (!user) {
           setData(prev => ({ 
             ...prev, 
@@ -54,44 +57,44 @@ export const useVTCData = () => {
         }
 
         const userId = user.id
+        const currentDate = new Date()
+        const currentMonth = currentDate.getMonth() + 1
+        const currentYear = currentDate.getFullYear()
 
-        // Fetch profile
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', userId)
-          .single()
+        // Fetch all data concurrently
+        const [profileResult, ridesResult, expensesResult] = await Promise.all([
+          supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', userId)
+            .single(),
+          supabase
+            .from('rides')
+            .select('*')
+            .eq('user_id', userId)
+            .order('date', { ascending: false }),
+          supabase
+            .from('expenses')
+            .select('*')
+            .eq('user_id', userId)
+            .order('date', { ascending: false })
+        ])
 
-        if (profileError && profileError.code !== 'PGRST116') {
-          throw new Error(`Profile fetch error: ${profileError.message}`)
+        if (profileResult.error && profileResult.error.code !== 'PGRST116') {
+          throw new Error(`Profile fetch error: ${profileResult.error.message}`)
+        }
+        if (ridesResult.error) {
+          throw new Error(`Rides fetch error: ${ridesResult.error.message}`)
+        }
+        if (expensesResult.error) {
+          throw new Error(`Expenses fetch error: ${expensesResult.error.message}`)
         }
 
-        // Fetch rides
-        const { data: rides, error: ridesError } = await supabase
-          .from('rides')
-          .select('*')
-          .eq('user_id', userId)
-          .order('date', { ascending: false })
-
-        if (ridesError) {
-          throw new Error(`Rides fetch error: ${ridesError.message}`)
-        }
-
-        // Fetch expenses
-        const { data: expenses, error: expensesError } = await supabase
-          .from('expenses')
-          .select('*')
-          .eq('user_id', userId)
-          .order('date', { ascending: false })
-
-        if (expensesError) {
-          throw new Error(`Expenses fetch error: ${expensesError.message}`)
-        }
+        const profile = profileResult.data
+        const rides = ridesResult.data
+        const expenses = expensesResult.data
 
         // Fetch monthly goals
-        const currentMonth = new Date().getMonth() + 1
-        const currentYear = new Date().getFullYear()
-        
         const { data: monthlyGoals, error: goalsError } = await supabase
           .from('monthly_goals')
           .select('*')
